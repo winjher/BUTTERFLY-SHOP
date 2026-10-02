@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base target="_top">
-  <?!= include('Stylesheet'); ?>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Butterfly Pupae Shop & Park</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* Embedded styles previously loaded via Apps Script Stylesheet include */
     :root {
       --primary: #2f6b3f;
       --primary-hover: #245330;
@@ -182,7 +179,6 @@
  <button class="btn" onclick="closePopup(true)">View &amp; Buy</button> <button class="btn" style="background:#888" onclick="closePopup(false)">Later</button></div></div>
 
 <main>
-  <!-- ===== SHOP ===== -->
   <div id="viewShop">
     <p id="adminHint" class="note" style="display:none">Manage mode: change price, mark a species as Flooded, set photos, and edit park reservation settings.</p>
     <div class="grid" id="grid"></div>
@@ -195,7 +191,6 @@
 
   <div id="viewPupae" class="hide"></div>
 
-  <!-- ===== PARK RESERVATION ===== -->
   <div id="viewPark" class="hide">
     <div class="panel adminonly">
       <h3 style="margin-top:0">Park Settings (Manage mode)</h3>
@@ -249,8 +244,7 @@
 </aside>
 
 <script>
-// Replace this with your Google Apps Script Web App exec URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGwLGVp2tTKOaspHz9Z82oTt99AveIwP1FMiDx8BYqzbKWrVMQFrpbRgb5aD-W18yY/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIi6BDnK7XxwwUb0QF-AeaaWHVHjOXPqwOP4xZR3GuyZ0rOaBb6Gc7uvG4H8CUKQM/exec';
 
 (function () {
   if (window.google && window.google.script && window.google.script.run) return;
@@ -263,22 +257,23 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGwLGVp2tTKOas
         if (typeof name !== 'string' || name === 'then') return undefined;
         return function () {
           const args = Array.prototype.slice.call(arguments);
-          fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ fn: name, args: args })
+          
+          // Use URLSearchParams over GET/POST redirect to prevent CORS blocking on GitHub Pages
+          const payload = encodeURIComponent(JSON.stringify({ fn: name, args: args }));
+          fetch(APPS_SCRIPT_URL + '?request=' + payload, {
+            method: 'GET',
+            mode: 'cors'
           })
             .then(function (r) { return r.text(); })
             .then(function (t) {
               let j;
               try { j = JSON.parse(t); }
-              catch (e) { throw new Error('Server did not return JSON. Got: ' + t.slice(0, 120)); }
+              catch (e) { throw new Error('Server response error'); }
               if (j.error) throw new Error(j.error);
-              if (!('result' in j)) throw new Error('Unexpected reply from server.');
               if (ok) ok(j.result);
             })
             .catch(function (e) {
-              if (fail) fail(e); else console.error(e);
+              if (fail) fail(e);
             });
         };
       }
