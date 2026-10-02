@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦋 Butterfly Shop Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #8B5CF6;
+            --secondary: #EC4899;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.users {
+            border-left-color: var(--primary);
+        }
+
+        .stat-card.orders {
+            border-left-color: var(--secondary);
+        }
+
+        .stat-card.inventory {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.reservations {
+            border-left-color: var(--warning);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .stat-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .table-container {
+            background: var(--card);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:hover {
+            background: var(--bg);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .refresh-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+            float: right;
+            margin-bottom: 1rem;
+        }
+
+        .refresh-btn:hover {
+            background: #7C3AED;
+        }
+
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .role-breeder { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+        .role-purchaser { background: rgba(34, 197, 94, 0.1); color: #22C55E; }
+        .role-enthusiast { background: rgba(168, 85, 247, 0.1); color: #A855F7; }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .chart-container {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🦋 Butterfly Shop Dashboard</h1>
+            <p class="subtitle">Real-time business intelligence & operations hub</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <button class="refresh-btn" onclick="loadAllData()">🔄 Refresh Data</button>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab('users')">Users</button>
+            <button class="tab-btn" onclick="switchTab('inventory')">Inventory</button>
+            <button class="tab-btn" onclick="switchTab('orders')">Orders</button>
+            <button class="tab-btn" onclick="switchTab('reservations')">Reservations</button>
+            <button class="tab-btn" onclick="switchTab('activity')">Activity Log</button>
+        </div>
+
+        <div id="error-container"></div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card users">
+                    <div class="stat-label">👥 Total Users</div>
+                    <div class="stat-value" id="total-users">-</div>
+                    <div class="stat-sub" id="users-breakdown"></div>
+                </div>
+                <div class="stat-card orders">
+                    <div class="stat-label">🛒 Total Orders</div>
+                    <div class="stat-value" id="total-orders">-</div>
+                    <div class="stat-sub" id="orders-status"></div>
+                </div>
+                <div class="stat-card inventory">
+                    <div class="stat-label">📦 Inventory Items</div>
+                    <div class="stat-value" id="total-lots">-</div>
+                    <div class="stat-sub" id="inventory-status"></div>
+                </div>
+                <div class="stat-card reservations">
+                    <div class="stat-label">🎫 Park Reservations</div>
+                    <div class="stat-value" id="total-reservations">-</div>
+                    <div class="stat-sub" id="reservations-status"></div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Recent Activity Summary</h3>
+                <div id="activity-summary" style="margin-top: 1rem;">
+                    <div class="loading"><div class="spinner"></div> Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Full Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table">
+                        <tr><td colspan="6" class="loading"><div class="spinner"></div> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div id="inventory" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Species</th>
+                            <th>Breeder</th>
+                            <th>Total Qty</th>
+                            <th>Available</th>
+                            <th>Price (₱)</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table">
+                        <tr><td colspan="7" class="loading"><div class="spinner"></div> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Buyer</th>
+                            <th>Species</th>
+                            <th>Quantity</th>
+                            <th>Total (₱)</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table">
+                        <tr><td colspan="7" class="loading"><div class="spinner"></div> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reservations Tab -->
+        <div id="reservations" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ref #</th>
+                            <th>Guest</th>
+                            <th>Farm</th>
+                            <th>Date & Time</th>
+                            <th>Visitors</th>
+                            <th>Total (₱)</th>
+                            <th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-table">
+                        <tr><td colspan="7" class="loading"><div class="spinner"></div> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Activity Log Tab -->
+        <div id="activity" class="tab-content">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activity-table">
+                        <tr><td colspan="5" class="loading"><div class="spinner"></div> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Google Apps Script API URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzGwLGVp2tTKOaspHz9Z82oTt99AveIwP1FMiDx8BYqzbKWrVMQFrpbRgb5aD-W18yY/exec';
+
+        let cachedData = {};
+
+        async function fetchData(sheet) {
+            try {
+                const response = await fetch(`${GAS_URL}?action=getData&sheet=${sheet}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                return data.data || [];
+            } catch (error) {
+                console.error(`Error fetching ${sheet}:`, error);
+                showError(`Failed to load ${sheet} data`);
+                return [];
+            }
+        }
+
+        async function loadAllData() {
+            cachedData = {
+                users: await fetchData('Users'),
+                logins: await fetchData('Logins'),
+                activity: await fetchData('Activity'),
+                lots: await fetchData('Lots'),
+                orders: await fetchData('Orders'),
+                reservations: await fetchData('Reservations'),
+                config: await fetchData('Config')
+            };
+
+            updateOverview();
+            updateUsersTable();
+            updateInventoryTable();
+            updateOrdersTable();
+            updateReservationsTable();
+            updateActivityTable();
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateOverview() {
+            const users = cachedData.users || [];
+            const orders = cachedData.orders || [];
+            const lots = cachedData.lots || [];
+            const reservations = cachedData.reservations || [];
+            const activity = cachedData.activity || [];
+
+            // Update stats
+            document.getElementById('total-users').textContent = users.length;
+            
+            const roleCount = {
+                breeder: users.filter(u => u[1] === 'breeder').length,
+                purchaser: users.filter(u => u[1] === 'purchaser').length,
+                enthusiast: users.filter(u => u[1] === 'enthusiast').length
+            };
+            document.getElementById('users-breakdown').textContent = 
+                `${roleCount.breeder} Breeders · ${roleCount.purchaser} Purchasers · ${roleCount.enthusiast} Enthusiasts`;
+
+            document.getElementById('total-orders').textContent = orders.length;
+            const orderStatus = {
+                pending: orders.filter(o => o[6]?.includes('Awaiting')).length,
+                completed: orders.filter(o => o[6]?.includes('Paid')).length
+            };
+            document.getElementById('orders-status').textContent = 
+                `${orderStatus.pending} Pending · ${orderStatus.completed} Completed`;
+
+            document.getElementById('total-lots').textContent = lots.length;
+            const availableQty = lots.reduce((sum, lot) => sum + (parseInt(lot[4]) || 0), 0);
+            document.getElementById('inventory-status').textContent = 
+                `${availableQty} pupae available for sale`;
+
+            document.getElementById('total-reservations').textContent = reservations.length;
+            document.getElementById('reservations-status').textContent = 
+                `Latest booking: ${reservations[0]?.[5] || 'N/A'}`;
+
+            // Recent activity
+            const recentActivity = activity.slice(0, 5).map(a => 
+                `<div style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                    <strong>${a[1]}</strong> (${a[2]}) - ${a[3]} <br/>
+                    <small style="color: var(--text-muted);">${a[0]}</small>
+                </div>`
+            ).join('');
+            document.getElementById('activity-summary').innerHTML = recentActivity || '<div class="empty-state">No activity yet</div>';
+        }
+
+        function updateUsersTable() {
+            const users = cachedData.users || [];
+            const html = users.map(u => `
+                <tr>
+                    <td><strong>${u[0]}</strong></td>
+                    <td><span class="role-badge role-${u[1]}">${u[1]}</span></td>
+                    <td>${u[2]}</td>
+                    <td>${u[3]}</td>
+                    <td>${u[4] || '-'}</td>
+                    <td>${u[7] || '-'}</td>
+                </tr>
+            `).join('');
+            document.getElementById('users-table').innerHTML = html || '<tr><td colspan="6" class="empty-state">No users found</td></tr>';
+        }
+
+        function updateInventoryTable() {
+            const lots = cachedData.lots || [];
+            const html = lots.map(lot => {
+                const available = parseInt(lot[4]) || 0;
+                const status = available > 50 ? 'success' : available > 0 ? 'warning' : 'danger';
+                return `
+                    <tr>
+                        <td><strong>${lot[2]}</strong></td>
+                        <td>${lot[1]}</td>
+                        <td>${lot[3]}</td>
+                        <td><span class="badge badge-${status}">${available}</span></td>
+                        <td>₱${lot[5]}</td>
+                        <td>${lot[7]}</td>
+                        <td>${lot[8] || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('inventory-table').innerHTML = html || '<tr><td colspan="7" class="empty-state">No inventory found</td></tr>';
+        }
+
+        function updateOrdersTable() {
+            const orders = cachedData.orders || [];
+            const html = orders.map(o => {
+                const statusClass = o[6]?.includes('Awaiting') ? 'warning' : o[6]?.includes('Paid') ? 'success' : 'info';
+                return `
+                    <tr>
+                        <td><strong>${o[0]}</strong></td>
+                        <td>${o[1]}</td>
+                        <td>${o[3]}</td>
+                        <td>${o[4]}</td>
+                        <td>₱${o[5]}</td>
+                        <td><span class="badge badge-${statusClass}">${o[6]}</span></td>
+                        <td>${o[8] || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+            document.getElementById('orders-table').innerHTML = html || '<tr><td colspan="7" class="empty-state">No orders found</td></tr>';
+        }
+
+        function updateReservationsTable() {
+            const reservations = cachedData.reservations || [];
+            const html = reservations.map(r => `
+                <tr>
+                    <td><strong>${r[0]}</strong></td>
+                    <td>${r[3]}</td>
+                    <td>${r[2]}</td>
+                    <td>${r[5]} ${r[6]}</td>
+                    <td>${r[7]}</td>
+                    <td>₱${r[8]}</td>
+                    <td>${r[4]}</td>
+                </tr>
+            `).join('');
+            document.getElementById('reservations-table').innerHTML = html || '<tr><td colspan="7" class="empty-state">No reservations found</td></tr>';
+        }
+
+        function updateActivityTable() {
+            const activity = cachedData.activity || [];
+            const html = activity.slice(0, 50).map(a => `
+                <tr>
+                    <td>${a[0]}</td>
+                    <td><strong>${a[1]}</strong></td>
+                    <td><span class="role-badge role-${a[2]}">${a[2]}</span></td>
+                    <td>${a[3]}</td>
+                    <td>${a[4] || '-'}</td>
+                </tr>
+            `).join('');
+            document.getElementById('activity-table').innerHTML = html || '<tr><td colspan="5" class="empty-state">No activity found</td></tr>';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-container');
+            errorDiv.innerHTML = `<div class="error">⚠️ ${message}</div>`;
+            setTimeout(() => { errorDiv.innerHTML = ''; }, 5000);
+        }
+
+        // Load data on page load
+        window.addEventListener('load', loadAllData);
+    </script>
+</body>
+</html>
